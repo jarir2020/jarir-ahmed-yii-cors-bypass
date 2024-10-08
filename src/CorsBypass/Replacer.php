@@ -5,30 +5,48 @@ namespace JarirAhmed\CorsBypass;
 class Replacer
 {
     /**
-     * Automatically detect and replace the Yii web/index.php with the CORS-enabled version.
+     * Replace the index.php file in the Yii application.
      *
-     * @throws \Exception If the file cannot be copied or written.
+     * @param string $indexFilePath Path to the index.php file.
+     * @return void
+     * @throws \Exception If the index.php file does not exist or if the replacement fails.
      */
-    public function replaceIndexFile()
+    public function replaceIndexFile($indexFilePath)
     {
-        // Detect the target path automatically based on the current script's directory
-        $appRoot = realpath(__DIR__ . '/../../../../'); // Move up to the project root
-        $targetPath = $appRoot . '/web/index.php'; // Append the web/index.php path
-
-        if (!file_exists($targetPath)) {
-            throw new \Exception("The target index.php file does not exist at: $targetPath");
+        // Check if the original index.php file exists
+        if (!file_exists($indexFilePath)) {
+            throw new \Exception("The target index.php file does not exist at: $indexFilePath");
         }
 
-        if (!is_writable($targetPath)) {
-            throw new \Exception("The target index.php file is not writable at: $targetPath");
-        }
+        // Define the new index.php content
+        $newIndexContent = <<<PHP
+<?php
 
-        $sourcePath = __DIR__ . '/../templates/index.php'; // The CORS-enabled index.php file
+defined('YII_DEBUG') or define('YII_DEBUG', true);
+defined('YII_ENV') or define('YII_ENV', 'dev');
 
-        if (!copy($sourcePath, $targetPath)) {
-            throw new \Exception("Failed to replace the index.php file.");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Access-Control-Allow-Origin");
+header("Access-Control-Allow-Credentials: true");
+
+if (\$_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    header('HTTP/1.1 200 OK');
+    exit();
+}
+
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../vendor/yiisoft/yii2/Yii.php';
+
+// Load the application configuration
+\$config = require __DIR__ . '/../config/web.php';
+
+(new yii\web\Application(\$config))->run();
+PHP;
+
+        // Write the new content to index.php
+        if (file_put_contents($indexFilePath, $newIndexContent) === false) {
+            throw new \Exception("Failed to write the new index.php file at: $indexFilePath");
         }
-        
-        echo "index.php file replaced successfully at: $targetPath\n";
     }
 }
