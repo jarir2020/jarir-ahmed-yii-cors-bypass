@@ -5,21 +5,24 @@ namespace JarirAhmed\CorsBypass;
 class Replacer
 {
     /**
-     * Replace the index.php file in the Yii application.
+     * Replace the index.php file with the CORS-enabled version.
      *
-     * @param string $indexFilePath Path to the index.php file.
      * @return void
-     * @throws \Exception If the index.php file does not exist or if the replacement fails.
+     * @throws \Exception
      */
-    public function replaceIndexFile($indexFilePath)
+    public function replaceIndexFile()
     {
-        // Check if the original index.php file exists
+        // Use the getcwd() function to get the current working directory
+        // and append the path to the web/index.php file
+        $indexFilePath = getcwd() . '/index.php'; 
+
+        // Check if the index.php file exists
         if (!file_exists($indexFilePath)) {
-            throw new \Exception("The target index.php file does not exist at: $indexFilePath");
+            throw new \Exception("The target index.php file does not exist at: " . $indexFilePath);
         }
 
-        // Define the new index.php content
-        $newIndexContent = <<<PHP
+        // Define the new content for the index.php file
+        $newContent = <<<EOD
 <?php
 
 defined('YII_DEBUG') or define('YII_DEBUG', true);
@@ -38,15 +41,14 @@ if (\$_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../vendor/yiisoft/yii2/Yii.php';
 
-// Load the application configuration
 \$config = require __DIR__ . '/../config/web.php';
 
 (new yii\web\Application(\$config))->run();
-PHP;
+EOD;
 
-        // Write the new content to index.php
-        if (file_put_contents($indexFilePath, $newIndexContent) === false) {
-            throw new \Exception("Failed to write the new index.php file at: $indexFilePath");
+        // Attempt to replace the index.php file
+        if (file_put_contents($indexFilePath, $newContent) === false) {
+            throw new \Exception("Failed to write to index.php: " . $indexFilePath);
         }
     }
 }
