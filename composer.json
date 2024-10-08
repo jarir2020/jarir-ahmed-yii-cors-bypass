@@ -1,0 +1,21 @@
+{
+    "name": "jarir-ahmed/yii-cors-bypass",
+    "description": "A package to replace the index.php file in a Yii application to bypass CORS policy for React and Vue.js",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jarir Ahmed",
+            "email": "jarircse16@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "JarirAhmed\\CorsBypass\\": "src/CorsBypass/"
+        }
+    },
+    "require": {
+        "php": ">=7.2"
+    },
+    "minimum-stability": "stable"
+}
